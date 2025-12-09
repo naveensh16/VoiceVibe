@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}VoiceVibe - AI Assistant with Voice Recognition{% endblock %}</title>
+    <meta name="description" content="{% block description %}VoiceVibe is a powerful AI assistant with voice recognition. Chat with AI, use voice commands, and get instant intelligent responses.{% endblock %}" />
+    <meta name="keywords" content="AI assistant, voice recognition, chatbot, AI chat, voice AI, conversational AI, VoiceVibe" />
+    <meta name="author" content="VoiceVibe" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="{{ request.url }}" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ request.url }}" />
+    <meta property="og:title" content="{% block og_title %}VoiceVibe - AI Assistant with Voice Recognition{% endblock %}" />
+    <meta property="og:description" content="Intelligent AI assistant with advanced voice recognition and natural conversation capabilities." />
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}" />
+    <meta property="og:site_name" content="VoiceVibe" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="{{ request.url }}" />
+    <meta name="twitter:title" content="{% block twitter_title %}VoiceVibe - AI Assistant{% endblock %}" />
+    <meta name="twitter:description" content="Intelligent AI assistant with voice recognition" />
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VoiceVibe" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Fonts - optimized loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicon.png') }}" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+    
+    <!-- Core styles - optimized loading -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+    
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{{ url_for('static', filename='css/base.css') }}" as="style" />
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "VoiceVibe",
+      "applicationCategory": "ProductivityApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "AI-powered assistant with voice recognition capabilities",
+      "operatingSystem": "Web Browser",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "256"
+      }
+    }
+    </script>
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+    <!-- Scripts - deferred for performance -->
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}" defer></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
