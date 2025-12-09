@@ -97,6 +97,32 @@ VoiceVibe is a modern, full-stack web application that combines AI-powered chat 
    http://localhost:8000
    ```
 
+### 🚀 Deploy to Vercel
+
+1. **Push to GitHub** (if not already done)
+   ```bash
+   git add .
+   git commit -m "Add Vercel configuration"
+   git push origin main
+   ```
+
+2. **Deploy to Vercel**
+   - Visit [vercel.com](https://vercel.com) and sign in
+   - Click "Add New Project"
+   - Import your GitHub repository
+   - Add environment variables:
+     - `SECRET_KEY`: Your secret key
+     - `GROQ_API_KEY`: Your Groq API key
+     - `DATABASE_URL`: Use Vercel Postgres or external DB
+   - Click "Deploy"
+
+3. **Configure Database** (Important)
+   - SQLite doesn't work on Vercel (serverless)
+   - Use Vercel Postgres, PostgreSQL, or MongoDB
+   - Update `DATABASE_URL` in environment variables
+
+**Note**: File uploads and persistent storage require external storage solutions (AWS S3, Cloudinary, etc.) as Vercel's filesystem is read-only.
+
 ---
 
 ## 📁 Project Structure & File Details
