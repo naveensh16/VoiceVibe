@@ -1,6 +1,30 @@
 // static/js/chat.js
 console.log("chat.js loaded");
 
+// Performance optimizations
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const messagesEl = document.getElementById("messages");
   const input = document.getElementById("user-input");
@@ -15,18 +39,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Chat History Storage
-  let chatHistory = JSON.parse(localStorage.getItem("voicevibe_history") || "[]");
-
-  function saveChatHistory() {
-    localStorage.setItem("voicevibe_history", JSON.stringify(chatHistory));
-  }
+  // Use session-based storage (reduced localStorage usage)
+  let chatHistory = [];
+  let isLoadingHistory = false;
 
   function formatTime(date) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
+  // Optimized message append with DocumentFragment
   function appendMessage(text, role = "bot") {
+    const fragment = document.createDocumentFragment();
+    
     const msgDiv = document.createElement("div");
     msgDiv.className = `msg ${role}`;
     msgDiv.textContent = text;
@@ -35,44 +59,56 @@ document.addEventListener("DOMContentLoaded", () => {
     timeDiv.className = "msg-time";
     timeDiv.textContent = formatTime(new Date());
     
-    messagesEl.appendChild(msgDiv);
-    messagesEl.appendChild(timeDiv);
+    fragment.appendChild(msgDiv);
+    fragment.appendChild(timeDiv);
+    messagesEl.appendChild(fragment);
     
-    // Save to history
+    // Add to session history (no localStorage writes)
     chatHistory.push({
       text: text,
       role: role,
       timestamp: new Date().toISOString()
     });
-    saveChatHistory();
     
-    // Scroll to bottom
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    // Throttled scroll
+    requestAnimationFrame(() => {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
     
     return msgDiv;
   }
 
+  // Optimized batch rendering for chat history
   function loadChatHistory() {
-    messagesEl.innerHTML = "";
-    chatHistory.forEach(msg => {
-      const msgDiv = document.createElement("div");
-      msgDiv.className = `msg ${msg.role}`;
-      msgDiv.textContent = msg.text;
+    if (isLoadingHistory) return;
+    isLoadingHistory = true;
+    
+    requestAnimationFrame(() => {
+      const fragment = document.createDocumentFragment();
       
-      const timeDiv = document.createElement("div");
-      timeDiv.className = "msg-time";
-      timeDiv.textContent = formatTime(new Date(msg.timestamp));
+      chatHistory.forEach(msg => {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `msg ${msg.role}`;
+        msgDiv.textContent = msg.text;
+        
+        const timeDiv = document.createElement("div");
+        timeDiv.className = "msg-time";
+        timeDiv.textContent = formatTime(new Date(msg.timestamp));
+        
+        fragment.appendChild(msgDiv);
+        fragment.appendChild(timeDiv);
+      });
       
-      messagesEl.appendChild(msgDiv);
-      messagesEl.appendChild(timeDiv);
+      messagesEl.innerHTML = "";
+      messagesEl.appendChild(fragment);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      isLoadingHistory = false;
     });
-    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   function clearChat() {
     if (confirm("Clear all chat history?")) {
       chatHistory = [];
-      saveChatHistory();
       messagesEl.innerHTML = "";
       appendMessage("👋 Welcome to VoiceVibe! I'm your AI assistant. How can I help you today?", "bot");
     }
@@ -194,10 +230,31 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div style="padding:16px; background:rgba(255,255,255,0.03); border-radius:12px;">
           <label style="display:block; margin-bottom:8px; color:var(--text); font-weight:600;">Data Management</label>
-          <button onclick="if(confirm('Clear all local chat history?')) { localStorage.removeItem('voicevibe_history'); location.reload(); }" style="padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:8px; cursor:pointer;">Clear All History</button>
+          <button id="clear-session-btn" style="padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:8px; cursor:pointer;">Clear Session History</button>
         </div>
       </div>
     `;
+    
+    // Add click handler for clear session button
+    setTimeout(() => {
+      const clearSessionBtn = document.getElementById('clear-session-btn');
+      if (clearSessionBtn) {
+        clearSessionBtn.addEventListener('click', async () => {
+          if (confirm('Clear all session chat history?')) {
+            try {
+              await fetch('/session-history', {
+                method: 'DELETE',
+                credentials: 'include'
+              });
+              chatHistory = [];
+              location.reload();
+            } catch (err) {
+              console.error('Failed to clear session:', err);
+            }
+          }
+        });
+      }
+    }, 100);
   }
 
   function hideAllPanels() {
@@ -423,12 +480,34 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUploadList();
   };
 
+  // Load session history from server
+  async function loadSessionHistory() {
+    try {
+      const res = await fetch('/session-history', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        chatHistory = data.history || [];
+        if (chatHistory.length > 0) {
+          loadChatHistory();
+        }
+      }
+    } catch (err) {
+      console.error('[chat] Failed to load session history:', err);
+    }
+  }
+
   // Initialize
   console.log("[chat] Chat interface ready");
-  if (chatHistory.length === 0) {
-    appendMessage("👋 Welcome to VoiceVibe! I'm your AI assistant. How can I help you today?", "bot");
-  } else {
-    loadChatHistory();
-  }
-  input.focus();
+  
+  // Load session history first, then show welcome message if empty
+  loadSessionHistory().then(() => {
+    if (chatHistory.length === 0) {
+      appendMessage("👋 Welcome to VoiceVibe! I'm your AI assistant. How can I help you today?", "bot");
+    }
+    input.focus();
+  });
 });

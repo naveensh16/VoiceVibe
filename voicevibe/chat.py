@@ -1,7 +1,7 @@
 # voicevibe/chat.py
 import os
 import logging
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, session
 from werkzeug.utils import secure_filename
 from .models import SessionLocal, Conversation, Message
 from .llm import run_llm
@@ -18,6 +18,45 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @chat_bp.route("/chat-ui", methods=["GET"])
 def chat_ui():
     return render_template("chat.html")
+
+# Session-based chat history endpoints
+@chat_bp.route("/session-history", methods=["GET"])
+@require_auth
+def get_session_history():
+    """Get chat history from current session"""
+    history = session.get('chat_history', [])
+    return jsonify({"history": history})
+
+@chat_bp.route("/session-history", methods=["POST"])
+@require_auth
+def add_to_session_history():
+    """Add message to session history"""
+    data = request.get_json() or {}
+    message = data.get("message")
+    role = data.get("role", "user")
+    
+    if not message:
+        return jsonify({"error": "No message provided"}), 400
+    
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+    
+    session['chat_history'].append({
+        "text": message,
+        "role": role,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    session.modified = True
+    
+    return jsonify({"status": "ok"})
+
+@chat_bp.route("/session-history", methods=["DELETE"])
+@require_auth
+def clear_session_history():
+    """Clear session chat history"""
+    session.pop('chat_history', None)
+    session.modified = True
+    return jsonify({"status": "cleared"})
 
 # text chat API (POST) - requires auth
 @chat_bp.route("/chat", methods=["POST"])

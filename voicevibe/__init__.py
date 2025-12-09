@@ -1,5 +1,6 @@
 # voicevibe/__init__.py
 from flask import Flask, session
+from flask_session import Session
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
@@ -23,11 +24,12 @@ def create_app():
         app.config['SECRET_KEY'] = os.urandom(24).hex()
         print("WARNING: Using random SECRET_KEY. Set SECRET_KEY in .env for production!")
     
-    # Ensure session configuration is loaded
-    app.config['SESSION_COOKIE_SECURE'] = False
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
+    # Create flask_session directory if it doesn't exist
+    session_dir = os.path.join(BASE_DIR, "flask_session")
+    os.makedirs(session_dir, exist_ok=True)
+    
+    # Initialize Flask-Session for server-side sessions
+    Session(app)
     
     # After request handler to ensure session is persisted
     @app.after_request

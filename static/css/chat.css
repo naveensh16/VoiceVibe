@@ -1,5 +1,24 @@
 /* Chat page - clean minimalist design */
 
+/* Performance optimizations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Use transform and opacity for animations (GPU accelerated) */
+.msg, .upload-item, .nav-item {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduce paint areas */
+.gradient-orb {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
 /* Animated background matching home page */
 body {
   background: #000000 !important;

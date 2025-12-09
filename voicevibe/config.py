@@ -16,7 +16,12 @@ class Config:
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
     WHISPER_API_URL = os.getenv("WHISPER_API_URL", "")
     
-    # Session configuration for Flask sessions
+    # Flask-Session configuration for server-side sessions
+    SESSION_TYPE = "filesystem"  # Store sessions on server filesystem
+    SESSION_FILE_DIR = BASE_DIR / "flask_session"  # Session storage directory
+    SESSION_PERMANENT = True
+    SESSION_USE_SIGNER = True  # Sign session cookies
+    SESSION_KEY_PREFIX = "voicevibe:"
     SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
     SESSION_COOKIE_HTTPONLY = True  # Prevents JS from accessing session cookie
     SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection

@@ -33,6 +33,7 @@ env/
 # Flask
 instance/
 .webassets-cache
+flask_session/
 *.db
 *.sqlite
 *.sqlite3
