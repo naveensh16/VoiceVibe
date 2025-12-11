@@ -539,9 +539,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-**Naveen** - [@yourusername](https://github.com/naveensh16)
+**Naveen** - [naveensh16](https://github.com/naveensh16)
 
-Project Link: [https://github.com/yourusername/voicevibe](https://github.com/naveensh16/voicevibe)
+Project Link: [https://github.com/naveensh16/voicevibe](https://github.com/naveensh16/voicevibe)
 
 ---
 
